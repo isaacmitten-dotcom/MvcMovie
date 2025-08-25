@@ -13,3 +13,6 @@ An ASP.NET Core MVC web application for managing a movie database. Users can vie
 - ASP.NET Core MVC
 - Entity Framework Core
 - SQL Server (LocalDB)
+
+
+<img width="1811" height="789" alt="image" src="https://github.com/user-attachments/assets/29672083-529c-4e21-b19b-27de78ebb8bd" />
