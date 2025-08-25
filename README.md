@@ -12,7 +12,4 @@ An ASP.NET Core MVC web application for managing a movie database. Users can vie
 
 - ASP.NET Core MVC
 - Entity Framework Core
-- SQL Server (LocalDB or configured connection string)
-- Razor Pages
-- C#
-- Bootstrap (via default ASP.NET template)
+- SQL Server (LocalDB)
