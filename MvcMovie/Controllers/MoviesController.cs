@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using MvcMovie.Data;
+using MvcMovie.Helper;
 using MvcMovie.Models;
 
 namespace MvcMovie.Controllers
@@ -27,7 +27,7 @@ namespace MvcMovie.Controllers
         {
             if (_context.Movie == null)
             {
-                _logger.LogError(new NullReferenceException(), "Movie context is null");
+                _logger.Error(new Exception(), "GET index: Context was null");
                 return Problem("Entity set 'MvcMovieContext.Movie' is null.");
             }
 
@@ -40,13 +40,13 @@ namespace MvcMovie.Controllers
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                _logger.LogWarning("Search string provided: {SearchString}", searchString);
+                _logger.Debug("GET index: User searched for {searchString}", searchString);
                 movies = movies.Where(s => s.Title!.ToUpper().Contains(searchString.ToUpper()));
             }
 
             if (!string.IsNullOrEmpty(movieGenre))
             {
-                _logger.LogDebug("Filtering by genre: {Genre}", movieGenre);
+                _logger.Debug("GET index:User searched for {movieGenre}", movieGenre);
                 movies = movies.Where(x => x.Genre == movieGenre);
             }
 
@@ -64,14 +64,14 @@ namespace MvcMovie.Controllers
         {
             if (id == null)
             {
-                _logger.LogError("Details requested with null ID at {Time}", DateTimeOffset.UtcNow);
+                _logger.Warn("GET: details: Details was called with a null Id");
                 return NotFound();
             }
 
             var movie = await _context.Movie.FirstOrDefaultAsync(m => m.Id == id);
             if (movie == null)
             {
-                _logger.LogError("Movie not found for ID {Id} at {Time}", id, DateTimeOffset.UtcNow);
+                _logger.Warn("GET: details: Movie with id; {id} not found", id);
                 return NotFound();
             }
 
@@ -81,6 +81,7 @@ namespace MvcMovie.Controllers
         // GET: Movies/Create
         public IActionResult Create()
         {
+            _logger.Info("GET create: Create view was rendered");
             return View();
         }
 
@@ -91,9 +92,9 @@ namespace MvcMovie.Controllers
         {
             if (ModelState.IsValid)
             {
+                _logger.Info("POST create: New Movie was added");
                 _context.Add(movie);
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Created new movie: {Title}", movie.Title);
                 return RedirectToAction(nameof(Index));
             }
             return View(movie);
@@ -104,14 +105,14 @@ namespace MvcMovie.Controllers
         {
             if (id == null)
             {
-                _logger.LogDebug("Edit requested with null ID at {Time}", DateTimeOffset.UtcNow);
+                _logger.Warn("GET edit: Edit was called with a null ID");
                 return NotFound();
             }
 
             var movie = await _context.Movie.FindAsync(id);
             if (movie == null)
             {
-                _logger.LogDebug("Edit requested but movie not found for ID {Id}", id);
+                _logger.Warn("GET edit: Movie not found");
                 return NotFound();
             }
 
@@ -125,7 +126,7 @@ namespace MvcMovie.Controllers
         {
             if (id != movie.Id)
             {
-                _logger.LogError("Edit ID mismatch at {Time}", DateTimeOffset.UtcNow);
+                _logger.Warn("POST edit: Movie ID:{mId} does not match route Id:{rId}", movie.Id, id);
                 return NotFound();
             }
 
@@ -135,18 +136,18 @@ namespace MvcMovie.Controllers
                 {
                     _context.Update(movie);
                     await _context.SaveChangesAsync();
-                    _logger.LogDebug("Successfully edited movie with ID {Id}", movie.Id);
+                    _logger.Info("POST edit:Movie was edited");
                 }
                 catch (DbUpdateConcurrencyException ex)
                 {
                     if (!MovieExists(movie.Id))
                     {
-                        _logger.LogWarning("Edit failed: movie ID {Id} not found", movie.Id);
+                        _logger.Warn("POST edit: movie was not found");
                         return NotFound();
                     }
                     else
                     {
-                        _logger.LogError(ex, "Concurrency error while editing movie ID {Id}", movie.Id);
+                        _logger.Error(ex, "POST edit: Concurrency Exception");
                         throw;
                     }
                 }
@@ -161,14 +162,14 @@ namespace MvcMovie.Controllers
         {
             if (id == null)
             {
-                _logger.LogWarning("Delete requested with null ID");
+                _logger.Warn(" GET delete: Delete was called with a null ID");
                 return NotFound();
             }
 
             var movie = await _context.Movie.FirstOrDefaultAsync(m => m.Id == id);
             if (movie == null)
             {
-                _logger.LogWarning("Delete requested but movie not found for ID {Id}", id);
+                _logger.Warn("GET delete: Movie not found");
                 return NotFound();
             }
 
@@ -183,7 +184,7 @@ namespace MvcMovie.Controllers
             var movie = await _context.Movie.FindAsync(id);
             if (movie != null)
             {
-                _logger.LogDebug("Deleting movie with ID {Id}", movie.Id);
+                _logger.Info("POST delete: movie id:{id} was removed", id);
                 _context.Movie.Remove(movie);
             }
 
